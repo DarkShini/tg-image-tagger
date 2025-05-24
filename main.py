@@ -1,6 +1,8 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, QSplitter, QInputDialog, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, QSplitter, QInputDialog, QMessageBox, QShortcut
 from PyQt5.QtCore import Qt, QSettings, qInstallMessageHandler
+from PyQt5.QtGui import QKeySequence
+
 
 def qt_message_handler(mode, context, message):
     # Игнорировать сообщения про ICC-профили
@@ -50,6 +52,9 @@ def main():
     add_tag_action = QAction("Add Tag...", window)
     tags_menu.addAction(add_tag_action)
 
+    prev_sc = QShortcut(QKeySequence(Qt.Key_Left), window)
+    next_sc = QShortcut(QKeySequence(Qt.Key_Right), window)
+
     def on_add_folder():
         folder = QFileDialog.getExistingDirectory(window, "Select Folder")
         if folder:
@@ -73,7 +78,11 @@ def main():
             except Exception as e:
                 QMessageBox.warning(window, "Error", f"Failed to add tag: {e}")
 
+
     add_tag_action.triggered.connect(on_add_tag)
+
+    prev_sc.activated.connect(controller.select_previous_image)
+    next_sc.activated.connect(controller.select_next_image)
 
     window.show()
     sys.exit(app.exec_())
