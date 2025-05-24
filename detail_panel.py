@@ -38,6 +38,8 @@ class DetailPanel(QWidget):
         # Store buttons and current image
         self.tag_buttons = {}   # tag_id -> QPushButton
         self.current_image = None  # The currently displayed ImageItem
+        self._orig_pixmap = None
+
 
     def set_tags_available(self, tags):
         """
@@ -72,9 +74,11 @@ class DetailPanel(QWidget):
         # Load pixmap
         pixmap = QPixmap(image_item.filepath)
         if pixmap.isNull():
+            self._orig_pixmap = None
             self.image_label.setText("Cannot load image")
         else:
-            self.image_label.setPixmap(pixmap)
+            self._orig_pixmap = pixmap
+            self._update_pixmap_scaled()
         # Update file info
         filename = os.path.basename(image_item.filepath)
         resolution = f"{pixmap.width()} x {pixmap.height()}" if not pixmap.isNull() else ""
@@ -98,3 +102,17 @@ class DetailPanel(QWidget):
         image_id = self.current_image.id
         # Emit signal for controller to handle DB update
         self.tag_changed.emit(image_id, tag_id, checked)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self._orig_pixmap:
+            self._update_pixmap_scaled()
+
+    def _update_pixmap_scaled(self):
+        viewport_size = self.scroll_area.viewport().size()
+        scaled = self._orig_pixmap.scaled(
+            viewport_size,
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation
+        )
+        self.image_label.setPixmap(scaled)
