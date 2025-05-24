@@ -57,8 +57,8 @@ class DetailPanel(QWidget):
             btn.setCheckable(True)
             # Style for checked state
             btn.setStyleSheet(
-                "QPushButton { padding: 8px; font-size: 14px; }"
-                "QPushButton:checked { background-color: #3399FF; color: white; }"
+                "QPushButton { background-color:lightgray; padding: 8px; font-size: 14px; border:2px solid gray; border-radius:4px }"
+                "QPushButton:checked { background-color: #3399FF; color: white; border: 2px solid #1a73e8;}"
             )
             # Connect toggle to handler
             btn.toggled.connect(lambda checked, tid=tag.id: self._on_button_toggled(tid, checked))
