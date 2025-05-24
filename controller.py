@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QSettings
+from PyQt5.QtCore import QSettings, QItemSelectionModel
 from image_table_view import ImageTableModel
 
 
@@ -102,9 +102,46 @@ class AppController:
         
         # Reload the updated image data from the database (to get new tag values)
         updated_image = self.db_manager.get_image(image_id)
-        
-        # Update the detail panel with the refreshed image data
-        self.detail_panel.set_image(updated_image)
+
+        # Обновим DetailPanel сразу (если хотим показать новые теги)
+        #self.detail_panel.set_image(updated_image)
+
+        # Найдём его в списке controller.images и заменим
+        for idx, img in enumerate(self.images):
+            if img.id == image_id:
+                self.images[idx] = updated_image
+                # Сообщаем модели, что строка idx изменилась
+                model = self.image_table.model()
+                # Расчитаем индекс в table: row и column
+                # поскольку ImageTableModel упакован в построчную сетку
+                row = idx // model._columns
+                col = idx % model._columns
+                table_index = model.index(row, col)
+                # Обозначим, что данные на этом индексе изменились
+                model.dataChanged.emit(table_index, table_index, [model.ImageRole])
+                break
+
+
+
+    def select_previous_image(self):
+        idx_list = self.image_table.selectionModel().selectedIndexes()
+        if not idx_list: 
+            return
+        current = idx_list[0]
+        prev = self.image_table.model().index(current.row() , current.column()- 1)
+        if prev.isValid():
+            self.image_table.selectionModel().select(prev, QItemSelectionModel.ClearAndSelect)
+            self.on_image_selected(self.image_table.selectionModel().selection(), None)
+
+    def select_next_image(self):
+        idx_list = self.image_table.selectionModel().selectedIndexes()
+        if not idx_list: 
+            return
+        current = idx_list[0]
+        nxt = self.image_table.model().index(current.row() , current.column()+ 1)
+        if nxt.isValid():
+            self.image_table.selectionModel().select(nxt, QItemSelectionModel.ClearAndSelect)
+            self.on_image_selected(self.image_table.selectionModel().selection(), None)
 
     def run(self):
         """

@@ -57,8 +57,12 @@ class DetailPanel(QWidget):
             btn.setCheckable(True)
             # Style for checked state
             btn.setStyleSheet(
-                "QPushButton { background-color:lightgray; padding: 8px; font-size: 14px; border:2px solid gray; border-radius:4px }"
+                "QPushButton { padding: 8px; font-size: 14px; border:2px solid gray; border-radius:4px }"
                 "QPushButton:checked { background-color: #3399FF; color: white; border: 2px solid #1a73e8;}"
+                "QPushButton:hover { background-color: #dddddd;}"
+                "QPushButton : pressed { background-color: #bbbbbb } "
+                "QPushButton:checked:hover { background-color: #428AFF; }"
+                "QPushButton:checked:pressed { background-color: #1a5fcc; }"
             )
             # Connect toggle to handler
             btn.toggled.connect(lambda checked, tid=tag.id: self._on_button_toggled(tid, checked))
@@ -71,6 +75,7 @@ class DetailPanel(QWidget):
         Loads image, updates info, and adjusts button states.
         """
         self.current_image = image_item
+        
         # Load pixmap
         pixmap = QPixmap(image_item.filepath)
         if pixmap.isNull():
@@ -79,6 +84,7 @@ class DetailPanel(QWidget):
         else:
             self._orig_pixmap = pixmap
             self._update_pixmap_scaled()
+
         # Update file info
         filename = os.path.basename(image_item.filepath)
         resolution = f"{pixmap.width()} x {pixmap.height()}" if not pixmap.isNull() else ""
