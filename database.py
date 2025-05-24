@@ -169,6 +169,23 @@ class DatabaseManager:
         except sqlite3.Error as e:
             print(f"Error adding image {file_path}: {e}")
 
+    def get_image(self, image_id: int) -> Optional[ImageItem]:
+        """
+        Fetch a single image by ID, including its tags.
+        Returns ImageItem or None if not found.
+        """
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT id, filepath, width, height FROM images WHERE id = ?",
+            (image_id,)
+        )
+        row = cursor.fetchone()
+        if not row:
+            return None
+        tags = self.get_tags(image_id)
+        return ImageItem(id=row[0], filepath=row[1], width=row[2], height=row[3], tags=tags)
+
+
     def get_tags(self, image_id: int) -> List[str]:
         """
         Return a list of tag names associated with the given image ID.
