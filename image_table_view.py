@@ -8,7 +8,7 @@ Description: PyQt5 widget for displaying a list of images in a grid/table view,
 from PyQt5.QtCore import Qt, QSize, QRect, QModelIndex, QAbstractTableModel
 from PyQt5.QtGui import QPixmap, QPainter, QFontMetrics
 from PyQt5.QtWidgets import (
-    QTableView, QStyledItemDelegate, QHeaderView, QStyleOptionViewItem
+    QTableView, QStyledItemDelegate, QHeaderView, QStyleOptionViewItem, QStyle
 )
 
 try:
@@ -126,7 +126,7 @@ class ImageDelegate(QStyledItemDelegate):
         painter.save()
 
         # Draw background (highlight if selected)
-        if option.state & QStyleOptionViewItem.State_Selected:
+        if option.state & QStyle.State_Selected:
             painter.fillRect(rect, option.palette.highlight())
             text_color = option.palette.highlightedText().color()
         else:
@@ -141,8 +141,9 @@ class ImageDelegate(QStyledItemDelegate):
                 Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
             # Center the image horizontally, place it near the top with small margin
-            pix_x = rect.x() + (rect.width() - scaled_pixmap.width()) / 2
-            pix_y = rect.y() + 2  # top margin
+            pix_x = int(rect.x() + (rect.width() - scaled_pixmap.width()) / 2)
+            pix_y = int(rect.y() + 2)
+
             painter.drawPixmap(pix_x, pix_y, scaled_pixmap)
 
         # Draw tags text at bottom of cell

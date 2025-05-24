@@ -16,16 +16,17 @@ class DetailPanel(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        # Основная вертикальная компоновка виджета
+        # Main vertical layout
         self.layout = QVBoxLayout(self)
-        # Создаём QScrollArea для изображения
+        # Scroll area for the image
         self.scroll_area = QScrollArea(self)
-        self.image_label = QLabel(self)  # QLabel для отображения изображения
+        self.image_label = QLabel(self)
         self.image_label.setAlignment(Qt.AlignCenter)
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setWidget(self.image_label)  # помещаем label в scroll area
+        self.scroll_area.setWidget(self.image_label)
         self.layout.addWidget(self.scroll_area)
 
+        # Label for file info (name and resolution)
         self.info_label = QLabel(self)
         self.info_label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(self.info_label)
@@ -40,8 +41,8 @@ class DetailPanel(QWidget):
 
     def set_tags_available(self, tags):
         """
-        Инициализируем панель тегов. tags — список TagItem, содержащий tag.id и tag.name.
-        Создаём кнопку для каждого тега.
+        Initialize tag buttons from a list of TagItem (with id and name).
+        Buttons are checkable and styled to indicate active state.
         """
         # Clear existing buttons if any
         for btn in self.tag_buttons.values():
@@ -68,14 +69,13 @@ class DetailPanel(QWidget):
         Loads image, updates info, and adjusts button states.
         """
         self.current_image = image_item
-        # Загрузка изображения в QPixmap
+        # Load pixmap
         pixmap = QPixmap(image_item.filepath)
         if pixmap.isNull():
-            # Если не удалось загрузить, устанавливаем сообщение
             self.image_label.setText("Cannot load image")
         else:
             self.image_label.setPixmap(pixmap)
-        # Обновляем информацию о файле: имя и разрешение
+        # Update file info
         filename = os.path.basename(image_item.filepath)
         resolution = f"{pixmap.width()} x {pixmap.height()}" if not pixmap.isNull() else ""
         self.info_label.setText(f"{filename}    {resolution}")
