@@ -1,6 +1,16 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, QSplitter, QInputDialog, QMessageBox
-from PyQt5.QtCore import Qt, QSettings
+from PyQt5.QtCore import Qt, QSettings, qInstallMessageHandler
+
+def qt_message_handler(mode, context, message):
+    # Игнорировать сообщения про ICC-профили
+    if "icc" in message.lower():
+        return
+    # Иначе выводить по умолчанию
+    sys.__stdout__.write(message + "\n")
+
+qInstallMessageHandler(qt_message_handler)
+
 
 from database import DatabaseManager
 from image_table_view import ImageTableView
