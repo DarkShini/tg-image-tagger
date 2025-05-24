@@ -1,15 +1,18 @@
 # detail_panel.py
 
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QScrollArea, QPushButton
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QPushButton
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 import os
 
 class DetailPanel(QWidget):
     """
     DetailPanel displays a large image with file information and tag buttons.
-    When a new image is set, it updates the display and tag states.
+    Emits a signal when a tag is toggled.
     """
+
+    # Signal emitted when a tag button is toggled: args are (image_id, tag_id, new_state)
+    tag_changed = pyqtSignal(int, int, bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -23,37 +26,46 @@ class DetailPanel(QWidget):
         self.scroll_area.setWidget(self.image_label)  # помещаем label в scroll area
         self.layout.addWidget(self.scroll_area)
 
-        # Панель для метаданных: имя файла и разрешение
         self.info_label = QLabel(self)
         self.info_label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(self.info_label)
 
-        # Панель тегов: горизонтальный или вертикальный лэйаут
+        # Layout for tag buttons
         self.tags_layout = QVBoxLayout()
         self.layout.addLayout(self.tags_layout)
 
-        self.tag_buttons = {}   # Словарь: tag_id -> QPushButton
-        self.current_image = None  # Текущее выбранное ImageItem
+        # Store buttons and current image
+        self.tag_buttons = {}   # tag_id -> QPushButton
+        self.current_image = None  # The currently displayed ImageItem
 
     def set_tags_available(self, tags):
         """
         Инициализируем панель тегов. tags — список TagItem, содержащий tag.id и tag.name.
         Создаём кнопку для каждого тега.
         """
+        # Clear existing buttons if any
+        for btn in self.tag_buttons.values():
+            btn.deleteLater()
+        self.tag_buttons.clear()
+
+        # Create new buttons
         for tag in tags:
             btn = QPushButton(tag.name, self)
             btn.setCheckable(True)
-            # Стиль: фон зелёный, когда кнопка в состоянии checked:contentReference[oaicite:3]{index=3}.
-            btn.setStyleSheet("QPushButton:checked { background-color: green; color: white; }")
-            # При переключении тега вызываем метод handle_tag_toggle
-            btn.toggled.connect(lambda checked, tid=tag.id: self.handle_tag_toggle(tid, checked))
+            # Style for checked state
+            btn.setStyleSheet(
+                "QPushButton { padding: 8px; font-size: 14px; }"
+                "QPushButton:checked { background-color: #3399FF; color: white; }"
+            )
+            # Connect toggle to handler
+            btn.toggled.connect(lambda checked, tid=tag.id: self._on_button_toggled(tid, checked))
             self.tags_layout.addWidget(btn)
             self.tag_buttons[tag.id] = btn
 
     def set_image(self, image_item):
         """
-        Обновить виджет новым изображением.
-        image_item должен иметь свойства: id, filepath, tags (список активных tag_id).
+        Display a new ImageItem (with id, filepath, tags list).
+        Loads image, updates info, and adjusts button states.
         """
         self.current_image = image_item
         # Загрузка изображения в QPixmap
@@ -65,34 +77,24 @@ class DetailPanel(QWidget):
             self.image_label.setPixmap(pixmap)
         # Обновляем информацию о файле: имя и разрешение
         filename = os.path.basename(image_item.filepath)
-        if not pixmap.isNull():
-            resolution = f"{pixmap.width()} x {pixmap.height()}"
-        else:
-            resolution = ""
-        self.info_label.setText(f"{filename}  {resolution}")
+        resolution = f"{pixmap.width()} x {pixmap.height()}" if not pixmap.isNull() else ""
+        self.info_label.setText(f"{filename}    {resolution}")
 
-        # Обновляем состояние кнопок тегов согласно image_item.tags
-        active_tags = set(getattr(image_item, 'tags', []))
+        # Update tag buttons according to image_item.tags
+        active_tag_ids = set(image_item.tags)
         for tag_id, btn in self.tag_buttons.items():
-            # блокируем сигнал, чтобы не вызывать handle_tag_toggle во время обновления
+            # Prevent signal while updating
             btn.blockSignals(True)
-            btn.setChecked(tag_id in active_tags)
+            btn.setChecked(tag_id in active_tag_ids)
             btn.blockSignals(False)
 
-    def handle_tag_toggle(self, tag_id, checked):
+    def _on_button_toggled(self, tag_id, checked):
         """
-        Обработчик переключения тега. Сразу сохраняет изменение через set_tag().
+        Internal handler for button toggle.
+        Emits tag_changed signal with (image_id, tag_id, new_state).
         """
-        if self.current_image is None:
+        if not self.current_image:
             return
         image_id = self.current_image.id
-        # Вызываем функцию сохранения (предполагается реализация вне этого класса)
-        set_tag(image_id, tag_id, checked)
-
-# Пример заглушки функции сохранения тега в БД (должна быть реализована отдельно)
-def set_tag(image_id, tag_id, value):
-    """
-    Сохраняет изменение тега (tag_id) для изображения image_id в базу данных.
-    """
-    # Здесь код сохранения в БД
-    print(f"Tag {tag_id} set to {value} for image {image_id}")
+        # Emit signal for controller to handle DB update
+        self.tag_changed.emit(image_id, tag_id, checked)
