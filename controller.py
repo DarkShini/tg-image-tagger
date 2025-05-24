@@ -1,4 +1,6 @@
 from PyQt5.QtCore import QSettings
+from image_table_view import ImageTableModel
+
 
 class AppController:
     """
@@ -73,20 +75,17 @@ class AppController:
         - selected: QItemSelection of newly selected items.
         - deselected: QItemSelection of newly deselected items (unused).
         """
+
+        indexes = selected.indexes()
         # If nothing is selected, do nothing
-        if not selected.indexes():
+        if not indexes:
             return
         
-        # Get the first selected index (assuming single selection mode)
-        index = selected.indexes()[0]
-        row = index.row()
-        
-        # Retrieve the corresponding image from the loaded images list
-        # (Assumes self.images is in sync with the table's model order)
-        if 0 <= row < len(self.images):
-            image = self.images[row]
-            # Display the image details in the detail panel
+        index = indexes[0]
+        image = index.model().data(index, ImageTableModel.ImageRole)
+        if image:
             self.detail_panel.set_image(image)
+
 
     def handle_tag_changed(self, image_id, tag_id, value):
         """
