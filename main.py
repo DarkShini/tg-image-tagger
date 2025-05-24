@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, QSplitter
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, QSplitter, QInputDialog, QMessageBox
 from PyQt5.QtCore import Qt, QSettings
 
 from database import DatabaseManager
@@ -36,6 +36,10 @@ def main():
     add_folder_action = QAction("Add Folder...", window)
     file_menu.addAction(add_folder_action)
 
+    tags_menu = menubar.addMenu("Tags")
+    add_tag_action = QAction("Add Tag...", window)
+    tags_menu.addAction(add_tag_action)
+
     def on_add_folder():
         folder = QFileDialog.getExistingDirectory(window, "Select Folder")
         if folder:
@@ -48,6 +52,18 @@ def main():
             image_table.set_images(controller.images)
 
     add_folder_action.triggered.connect(on_add_folder)
+
+    def on_add_tag():
+        text, ok = QInputDialog.getText(window, "New Tag", "Enter tag name:")
+        if ok and text.strip():
+            try:
+                tag = db.get_or_create_tag(text.strip())
+                # Обновляем кнопки тегов в панели деталей
+                detail_panel.set_tags_available(db.get_all_tags())
+            except Exception as e:
+                QMessageBox.warning(window, "Error", f"Failed to add tag: {e}")
+
+    add_tag_action.triggered.connect(on_add_tag)
 
     window.show()
     sys.exit(app.exec_())
