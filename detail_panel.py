@@ -91,11 +91,11 @@ class DetailPanel(QWidget):
         self.info_label.setText(f"{filename}    {resolution}")
 
         # Update tag buttons according to image_item.tags
-        active_tag_ids = set(image_item.tags)
+        active_tag_names = image_item.tags
         for tag_id, btn in self.tag_buttons.items():
             # Prevent signal while updating
             btn.blockSignals(True)
-            btn.setChecked(tag_id in active_tag_ids)
+            btn.setChecked(btn.text() in active_tag_names)
             btn.blockSignals(False)
 
     def _on_button_toggled(self, tag_id, checked):
