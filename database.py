@@ -152,7 +152,7 @@ class DatabaseManager:
             ext = os.path.splitext(filename)[1].lower()
             if ext in extensions:
                 self._add_image(file_path)
-
+#TODO async
     def _add_image(self, file_path: str) -> None:
         """
         Add a single image to the database with its size.
@@ -168,7 +168,7 @@ class DatabaseManager:
             self.conn.commit()
         except sqlite3.Error as e:
             print(f"Error adding image {file_path}: {e}")
-
+#TODO async
     def get_image(self, image_id: int) -> Optional[ImageItem]:
         """
         Fetch a single image by ID, including its tags.
@@ -185,7 +185,7 @@ class DatabaseManager:
         tags = self.get_tags(image_id)
         return ImageItem(id=row[0], filepath=row[1], width=row[2], height=row[3], tags=tags)
 
-
+#TODO async
     def get_tags(self, image_id: int) -> List[str]:
         """
         Return a list of tag names associated with the given image ID.
@@ -199,7 +199,7 @@ class DatabaseManager:
         """, (image_id,))
         rows = cursor.fetchall()
         return [row[0] for row in rows]
-
+#TODO async
     def set_tag(self, image_id: int, tag_id: int, value: bool) -> None:
         """
         Add or remove a tag from an image.
@@ -221,7 +221,7 @@ class DatabaseManager:
                 (image_id, tag_id)
             )
             self.conn.commit()
-
+#TODO async
     def get_or_create_tag(self, name: str) -> TagItem:
         """
         Get a tag by name, or create it if it doesn't exist. Returns a TagItem.

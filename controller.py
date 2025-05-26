@@ -65,7 +65,7 @@ class AppController:
         """
         # Store the folder list under key 'folders'
         self.settings.setValue('folders', self.folders)
-
+#TODO potential async
     def on_image_selected(self, selected, deselected):
         """
         Slot connected to the image table's selectionChanged signal.
@@ -86,7 +86,7 @@ class AppController:
         if image:
             self.detail_panel.set_image(image)
 
-
+#TODO potential async
     def handle_tag_changed(self, image_id, tag_id, value):
         """
         Handler for when a tag is changed on an image.

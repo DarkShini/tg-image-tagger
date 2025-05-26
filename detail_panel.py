@@ -69,6 +69,7 @@ class DetailPanel(QWidget):
             self.tags_layout.addWidget(btn)
             self.tag_buttons[tag.id] = btn
 
+#TODO make async
     def set_image(self, image_item):
         """
         Display a new ImageItem (with id, filepath, tags list).
