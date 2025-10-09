@@ -22,7 +22,7 @@ from controller import AppController
 def main():
     app = QApplication(sys.argv)
     # Настройки приложения (имя организации и приложения — произвольное)
-    settings = QSettings("MyCompany", "ImageTagger")
+    settings = QSettings("by Korashi", "ImageTagger")
 
     # Инициализация компонентов
     db = DatabaseManager(db_path="image_tags.db")
@@ -48,6 +48,7 @@ def main():
     add_folder_action = QAction("Add Folder...", window)
     file_menu.addAction(add_folder_action)
 
+    # Меню для добавления тегов
     tags_menu = menubar.addMenu("Tags")
     add_tag_action = QAction("Add Tag...", window)
     tags_menu.addAction(add_tag_action)
