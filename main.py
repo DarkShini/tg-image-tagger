@@ -15,7 +15,7 @@ qInstallMessageHandler(qt_message_handler)
 
 
 from database import DatabaseManager
-from image_table_view import ImageTableView
+from image_widget import ImageGrid
 from detail_panel import DetailPanel
 from controller import AppController
 
@@ -26,7 +26,7 @@ def main():
 
     # Инициализация компонентов
     db = DatabaseManager(db_path="image_tags.db")
-    image_table = ImageTableView()
+    image_grid = ImageGrid()
     detail_panel = DetailPanel()
     detail_panel.set_tags_available(db.get_all_tags())
 
@@ -34,12 +34,12 @@ def main():
     window = QMainWindow()
     window.setWindowTitle("Image Tagger")
     splitter = QSplitter(Qt.Horizontal)
-    splitter.addWidget(image_table)
+    splitter.addWidget(image_grid)
     splitter.addWidget(detail_panel)
     window.setCentralWidget(splitter)
 
     # Контроллер связывает всё вместе
-    controller = AppController(image_table, detail_panel, db, settings)
+    controller = AppController(image_grid, detail_panel, db, settings)
     controller.run()
 
     # Меню для добавления папки
@@ -65,7 +65,7 @@ def main():
             db.add_folder(folder)
             # Перезагружаем список изображений
             controller.images = db.get_all_images()
-            image_table.set_images(controller.images)
+            image_grid.set_images(controller.images)
 
     add_folder_action.triggered.connect(on_add_folder)
 

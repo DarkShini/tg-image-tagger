@@ -1,12 +1,10 @@
 from PyQt5.QtCore import QSettings, QItemSelectionModel
-from image_table_view import ImageTableModel
-
 
 class AppController:
     """
     Controller class to connect database, image table view, and detail panel in a PyQt5 application.
     """
-    def __init__(self, image_table, detail_panel, database_manager, settings):
+    def __init__(self, image_grid, detail_panel, database_manager, settings):
         """
         Initialize the AppController.
 
@@ -20,10 +18,12 @@ class AppController:
         - settings: QSettings instance for saving/loading application settings.
         """
         # References to UI components and helpers
-        self.image_table = image_table
+        self.image_grid = image_grid
         self.detail_panel = detail_panel
         self.db_manager = database_manager
         self.settings = settings
+
+
         
         # Path to the image tags database file
         self.db_path = "image_tags.db"
@@ -65,24 +65,16 @@ class AppController:
         """
         # Store the folder list under key 'folders'
         self.settings.setValue('folders', self.folders)
+
 #TODO potential async
-    def on_image_selected(self, selected, deselected):
-        """
-        Slot connected to the image table's selectionChanged signal.
-        Retrieves the selected image and updates the detail panel to display it.
+    def on_image_selected(self, list):
 
-        Parameters:
-        - selected: QItemSelection of newly selected items.
-        - deselected: QItemSelection of newly deselected items (unused).
-        """
-
-        indexes = selected.indexes()
         # If nothing is selected, do nothing
-        if not indexes:
+        if not list:
             return
         
-        index = indexes[0]
-        image = index.model().data(index, ImageTableModel.ImageRole)
+        image = list[0]
+        
         if image:
             self.detail_panel.set_image(image)
 
@@ -149,11 +141,11 @@ class AppController:
         Populates the image table and connects signals between components.
         """
         # Populate the image table view with the loaded images
-        self.image_table.set_images(self.images)
+        self.image_grid.set_images(self.images)
         
         # Connect the image selection change signal to its handler
         # This will update the detail panel when a new image is selected.
-        self.image_table.selectionModel().selectionChanged.connect(self.on_image_selected)
+        self.image_grid.selection_changed.connect(self.on_image_selected)
         
         # Connect the detail panel's tag change signal to the handler
         # Assuming detail_panel has a signal 'tag_changed' with args (image_id, tag_id, value).
