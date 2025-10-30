@@ -1,21 +1,14 @@
 from PyQt5.QtCore import QSettings, QItemSelectionModel
 
 class AppController:
-    """
-    Controller class to connect database, image table view, and detail panel in a PyQt5 application.
-    """
+
     def __init__(self, image_grid, detail_panel, database_manager, settings):
         """
         Initialize the AppController.
 
         Loads the database path, known tags, and previously opened folders.
         If folders are found, it retrieves all images from the database, otherwise it leaves the image list empty.
-        
-        Parameters:
-        - image_table: instance of ImageTableView (the UI component showing images).
-        - detail_panel: instance of DetailPanel (the UI component showing image details).
-        - database_manager: instance or class of DatabaseManager for DB operations.
-        - settings: QSettings instance for saving/loading application settings.
+     
         """
         # References to UI components and helpers
         self.image_grid = image_grid
@@ -78,7 +71,7 @@ class AppController:
         if image:
             self.detail_panel.set_image(image)
 
-#TODO potential async
+#TODO #TODO #TODO - ADAPT FOR IMAGE GIRD DDDDDDD
     def handle_tag_changed(self, image_id, tag_id, value):
         """
         Handler for when a tag is changed on an image.
@@ -90,7 +83,10 @@ class AppController:
         - value: The new value/state of the tag (e.g. True/False).
         """
         # Update the tag in the database for the given image
-        self.db_manager.set_tag(image_id, tag_id, value)
+        if value:
+            self.db_manager.set_tag(image_id, tag_id, True)
+        else: 
+            self.db_manager.set_tag(image_id, tag_id, False)
         
         # Reload the updated image data from the database (to get new tag values)
         updated_image = self.db_manager.get_image(image_id)
@@ -99,48 +95,42 @@ class AppController:
         #self.detail_panel.set_image(updated_image)
 
         # Найдём его в списке controller.images и заменим
-        for idx, img in enumerate(self.images):
+        for idx,img in enumerate(self.images):
             if img.id == image_id:
                 self.images[idx] = updated_image
-                # Сообщаем модели, что строка idx изменилась
-                model = self.image_table.model()
-                # Расчитаем индекс в table: row и column
-                # поскольку ImageTableModel упакован в построчную сетку
-                row = idx // model._columns
-                col = idx % model._columns
-                table_index = model.index(row, col)
-                # Обозначим, что данные на этом индексе изменились
-                model.dataChanged.emit(table_index, table_index, [model.ImageRole])
+                #self.image_grid.update_image(img)
+                self.image_grid.update_image(img)
                 break
 
 
-
     def select_previous_image(self):
-        idx_list = self.image_table.selectionModel().selectedIndexes()
-        if not idx_list: 
-            return
-        current = idx_list[0]
-        prev = self.image_table.model().index(current.row() , current.column()- 1)
-        if prev.isValid():
-            self.image_table.selectionModel().select(prev, QItemSelectionModel.ClearAndSelect)
-            self.on_image_selected(self.image_table.selectionModel().selection(), None)
+        pass
+    # def select_previous_image(self):
+    #     idx_list = self.image_grid.list
+    #     if not idx_list: 
+    #         return
+    #     current = idx_list[0]
+    #     //prev = self.image_table.model().index(current.row() , current.column()- 1)
+    #     if prev.isValid():
+    #         self.image_table.selectionModel().select(prev, QItemSelectionModel.ClearAndSelect)
+    #         self.on_image_selected(self.image_table.selectionModel().selection(), None)
 
     def select_next_image(self):
-        idx_list = self.image_table.selectionModel().selectedIndexes()
-        if not idx_list: 
-            return
-        current = idx_list[0]
-        nxt = self.image_table.model().index(current.row() , current.column()+ 1)
-        if nxt.isValid():
-            self.image_table.selectionModel().select(nxt, QItemSelectionModel.ClearAndSelect)
-            self.on_image_selected(self.image_table.selectionModel().selection(), None)
+        pass
+    # def select_next_image(self):
+    #     idx_list = self.image_
+    #     if not idx_list: 
+    #         return
+    #     current = idx_list[0]
+    #     nxt = self.image_table.model().index(current.row() , current.column()+ 1)
+    #     if nxt.isValid():
+    #         self.image_table.selectionModel().select(nxt, QItemSelectionModel.ClearAndSelect)
+    #         self.on_image_selected(self.image_table.selectionModel().selection(), None)
 
     def run(self):
         """
         Final setup after initialization, called from main.
-        Populates the image table and connects signals between components.
         """
-        # Populate the image table view with the loaded images
         self.image_grid.set_images(self.images)
         
         # Connect the image selection change signal to its handler

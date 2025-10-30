@@ -37,8 +37,24 @@ class ImageGrid(QListWidget):
 
             self.addItem(item)
 
-    def get_selected_images(self):
+    def get_selected_images(self) -> ImageItem:
         return [item.data(Qt.UserRole) for item in self.selectedItems()]
+    
+
+    #don't work
+    def update_image(self, image):
+        for i in range(self.count()):
+            item = self.item(i)
+            if item.data(Qt.UserRole).id == image.id:
+                item.setText(", ".join(image.tags))
+                item.setData(Qt.UserRole, image)
+                
+
+    def update_selected_item(self, ImageItem):
+        item = self.selectedItems()[0]
+        item.setText(", ".join(ImageItem.tags))
+        item.setData(Qt.UserRole, ImageItem)
+
     
     selection_changed = pyqtSignal(list)
 
